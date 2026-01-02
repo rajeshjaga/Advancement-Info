@@ -72,19 +72,38 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
         this.search = new TextFieldWidget(textRenderer, width-config.marginX-currentInfoWidth+9, config.marginY+18, currentInfoWidth-18, 17, ScreenTexts.EMPTY);
     }
 
-    @Inject(method="render",
+    /*@Inject(method="render",
             at=@At(value="INVOKE",
-                    target="net/minecraft/client/gui/screen/advancement/AdvancementsScreen.drawWindow(Lnet/minecraft/client/gui/DrawContext;II)V"))
-    public void renderRightFrameBackground(DrawContext context, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
-        currentInfoWidth = config.infoWidth.calculate(width);
-        if(currentInfoWidth == 0) return;
+                    target="net/minecraft/client/gui/screen/Screen.drawWindow(Lnet/minecraft/client/gui/DrawContext;IIII)V"))
+    */
+    @Inject(
+            method = "render",
+            at = @At("TAIL")
+    )
+    private void renderRightFrameBackground(
+            DrawContext context,
+            int mouseX,
+            int mouseY,
+            float delta,
+            CallbackInfo ci
+    ) {
+        int width = this.width;
+        int height = this.height;
+
+        int infoWidth = AdvancementInfo.config.infoWidth.calculate(width);
+        if (infoWidth <= 0) return;
+
         context.fill(
-                width-config.marginX-currentInfoWidth+4, config.marginY+4,
-                width-config.marginX-4, height-config.marginY-4, 0xffc0c0c0);
+                width - AdvancementInfo.config.marginX - infoWidth + 4,
+                AdvancementInfo.config.marginY + 4,
+                width - AdvancementInfo.config.marginX - 4,
+                height - AdvancementInfo.config.marginY - 4,
+                0xFFC0C0C0
+        );
     }
 
     @Inject(method="drawWindow", at=@At("HEAD"), cancellable = true)
-    public void renderFrames(DrawContext context, int x, int y, CallbackInfo ci) {
+    public void renderFrames(DrawContext context, int x, int y,int width, int height, CallbackInfo ci) {
         currentInfoWidth = config.infoWidth.calculate(width);
         int iw = currentInfoWidth;
 
@@ -135,8 +154,13 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
 
         if (tabs.size() > 1) {
             for (AdvancementTab tab : tabs.values()) {
-                tab.drawBackground(context, x, y, tab == selectedTab);
-            }
+                tab.drawBackground(context,
+                        x,
+                        y,
+                        width,
+                        height,
+                        tab == selectedTab);
+                }
             for (AdvancementTab tab : tabs.values()) {
                 tab.drawIcon(context, x, y);
             }
@@ -206,15 +230,19 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
 
     @Inject(method="keyPressed", at=@At("HEAD"), cancellable = true)
     public void redirectKeysToSearch(KeyInput input, CallbackInfoReturnable<Boolean> cir) {
-        if (search.isActive()) {
-            if (input.key() == GLFW.GLFW_KEY_ENTER) {
-                AdvancementInfo.setMatchingFrom((AdvancementsScreen)(Object)this, search.getText());
-            }
-            search.keyPressed(input);
-            if (input.key() != GLFW.GLFW_KEY_ESCAPE) {
-                cir.setReturnValue(true);
-                cir.cancel();
-            }
+        if (search == null || !search.isActive()) {
+            return;
+        }
+
+        if (input.key() == GLFW.GLFW_KEY_ENTER) {
+            AdvancementInfo.setMatchingFrom((AdvancementsScreen)(Object)this, search.getText());
+        }
+
+        search.keyPressed(input);
+
+        if (input.key() != GLFW.GLFW_KEY_ESCAPE) {
+            cir.setReturnValue(true);
+            cir.cancel();
         }
     }
 

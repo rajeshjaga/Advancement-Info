@@ -1,18 +1,27 @@
 package de.guntram.mcmod.advancementinfo.mixin;
 
-import de.guntram.mcmod.advancementinfo.AdvancementInfo;
+
 import static de.guntram.mcmod.advancementinfo.AdvancementInfo.config;
+
+import de.guntram.mcmod.advancementinfo.AdvancementInfo;
+
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.advancement.AdvancementTab;
 import net.minecraft.client.gui.screen.advancement.AdvancementsScreen;
-import org.spongepowered.asm.mixin.Final;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Final;
+
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.Constant;
+
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+
 
 @Mixin(AdvancementTab.class)
 public class AdvancementTabMixin {
@@ -63,23 +72,36 @@ public class AdvancementTabMixin {
         }
     }
 
-    @ModifyConstant(method="render", constant=@Constant(intValue = 234), require = 1)
-    private int getAdvTreeXSize(int orig) { return screen.width - config.marginX*2 - 2*9 - currentInfoWidth; }
+//    @ModifyConstant(method="render", constant=@Constant(intValue = 234), require = 1)
+//    private int getAdvTreeXSize(int orig) { return screen.width - config.marginX*2 - 2*9 - currentInfoWidth; }
+//
+//    @ModifyConstant(method="render", constant=@Constant(intValue = 113), require = 1)
+//    private int getAdvTreeYSize(int orig) { return screen.height - config.marginY*2 - 3*9; }
+//
+//    @ModifyConstant(method="render", constant=@Constant(intValue = 117), require = 1)
+//    private int getAdvTreeXOrig(int orig) { return screen.width/2 - config.marginX - currentInfoWidth/2; }
+//
+//    @ModifyConstant(method="render", constant=@Constant(intValue = 56), require = 1)
+//    private int getAdvTreeYOrig(int orig) { return screen.height/2 - config.marginY; }
 
-    @ModifyConstant(method="render", constant=@Constant(intValue = 113), require = 1)
-    private int getAdvTreeYSize(int orig) { return screen.height - config.marginY*2 - 3*9; }
+//    @Inject(method = "getMoveXCenter", at = @At("HEAD"), cancellable = true)
+//    private void modifyMoveXCenter(int width, CallbackInfoReturnable<Integer> cir) {
+//        int vanilla = width / 2;
+//        int offset = config.infoWidth.calculate(width);
+//        cir.setReturnValue(vanilla - offset);
+//    }
+//
+//    @Inject(method = "getMoveYCenter", at = @At("HEAD"), cancellable = true)
+//    private void modifyMoveYCenter(int height, CallbackInfoReturnable<Integer> cir) {
+//        // Vanilla behavior unchanged
+//        cir.setReturnValue(height / 2);
+//    }
 
-    @ModifyConstant(method="render", constant=@Constant(intValue = 117), require = 1)
-    private int getAdvTreeXOrig(int orig) { return screen.width/2 - config.marginX - currentInfoWidth/2; }
-
-    @ModifyConstant(method="render", constant=@Constant(intValue = 56), require = 1)
-    private int getAdvTreeYOrig(int orig) { return screen.height/2 - config.marginY; }
-    
-    @ModifyConstant(method="move", constant=@Constant(intValue = 234), require = 2)
-    private int getMoveXCenter(int orig) { return screen.width - config.marginX*2 - 2*9 - currentInfoWidth; }
-
-    @ModifyConstant(method="move", constant=@Constant(intValue = 113), require = 2)
-    private int getMoveYCenter(int orig) { return screen.height - config.marginY*2 - 3*9; }
+//    @ModifyConstant(method="move", constant=@Constant(intValue = 234), require = 2)
+//    private int getMoveXCenter(int orig) { return screen.width - config.marginX*2 - 2*9 - currentInfoWidth; }
+//
+//    @ModifyConstant(method="move", constant=@Constant(intValue = 113), require = 2)
+//    private int getMoveYCenter(int orig) { return screen.height - config.marginY*2 - 3*9; }
 
     @ModifyConstant(method="render", constant=@Constant(intValue = 15), require = 1)
     private int getXTextureRepeats(int orig) { return (screen.width-config.marginX*2 - currentInfoWidth) / 16 + 1; }
