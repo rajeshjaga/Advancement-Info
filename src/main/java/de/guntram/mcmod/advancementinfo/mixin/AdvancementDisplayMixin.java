@@ -18,7 +18,7 @@ public class AdvancementDisplayMixin {
     @Shadow @Final private Text title;
 
     @Inject(method="isHidden", at=@At("HEAD"), cancellable = true)
-    
+
     public void isHiddenOverride(CallbackInfoReturnable<Boolean> cir) {
         cir.cancel();
         cir.setReturnValue(hidden && !AdvancementInfo.showAll);

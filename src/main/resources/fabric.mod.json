@@ -25,7 +25,7 @@
     "name": "AdvancementInfo",
     "description": "Make it easier to see which advancements you have and what's missing.",
     "icon": "icon.png",
-    "authors": [ "Giselbaer" ],
+    "authors": [ "" ],
     "contact": {
         "homepage": "https://www.curseforge.com/minecraft/mc-mods/advancementinfo",
         "sources": "https://github.com/gbl/AdvancementInfo",

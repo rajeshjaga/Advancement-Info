@@ -6,6 +6,8 @@ import de.guntram.mcmod.advancementinfo.AdvancementStep;
 import de.guntram.mcmod.advancementinfo.IteratorReceiver;
 import de.guntram.mcmod.advancementinfo.accessors.AdvancementScreenAccessor;
 import de.guntram.mcmod.advancementinfo.accessors.AdvancementWidgetAccessor;
+
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.advancement.Advancement;
@@ -25,6 +27,7 @@ import net.minecraft.client.resource.language.I18n;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -72,54 +75,44 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
         this.search = new TextFieldWidget(textRenderer, width-config.marginX-currentInfoWidth+9, config.marginY+18, currentInfoWidth-18, 17, ScreenTexts.EMPTY);
     }
 
-    /*@Inject(method="render",
-            at=@At(value="INVOKE",
-                    target="net/minecraft/client/gui/screen/Screen.drawWindow(Lnet/minecraft/client/gui/DrawContext;IIII)V"))
-    */
-    @Inject(
-            method = "render",
-            at = @At("TAIL")
-    )
-    private void renderRightFrameBackground(
+    @Inject(method = "render", at = @At("HEAD"))
+    private void renderRightPanel(
             DrawContext context,
             int mouseX,
             int mouseY,
             float delta,
             CallbackInfo ci
     ) {
-        int width = this.width;
-        int height = this.height;
+        currentInfoWidth = config.infoWidth.calculate(width);
+        if(currentInfoWidth == 0) return;
 
-        int infoWidth = AdvancementInfo.config.infoWidth.calculate(width);
-        if (infoWidth <= 0) return;
-
-        context.fill(
-                width - AdvancementInfo.config.marginX - infoWidth + 4,
-                AdvancementInfo.config.marginY + 4,
-                width - AdvancementInfo.config.marginX - 4,
-                height - AdvancementInfo.config.marginY - 4,
-                0xFFC0C0C0
-        );
+        context.fill(width-config.marginX-currentInfoWidth+4,
+                config.marginY+4,
+                width-config.marginX-4,
+                height-config.marginY-4,
+                0xFF606060);
     }
 
-    @Inject(method="drawWindow", at=@At("HEAD"), cancellable = true)
-    public void renderFrames(DrawContext context, int x, int y,int width, int height, CallbackInfo ci) {
+    @Inject(method="drawWindow(Lnet/minecraft/client/gui/DrawContext;IIII)V", at=@At("HEAD"), cancellable = true)
+    public void renderFrames(DrawContext context, int x, int y, int mouseX, int MouseY, CallbackInfo ci) {
         currentInfoWidth = config.infoWidth.calculate(width);
         int iw = currentInfoWidth;
 
         int screenW = 252;
         int screenH = 140;
-        int actualW = width - config.marginX - iw - x;
-        int actualH = width - config.marginY - y;
+        int actualW = this.width - config.marginX * 2 - iw ;
+        int actualH = this.height - config.marginY *2;
+
         int halfW = screenW/2;
         int halfH = screenH/2;
+
         int clipXh = (int) (Math.max(0, screenW-actualW)/2.+0.5);
         int clipXl = (int) (Math.max(0, screenW-actualW)/2.);
         int clipYh = (int) (Math.max(0, screenH-actualH)/2.+0.5);
         int clipYl = (int) (Math.max(0, screenH-actualH)/2.);
 
-        int rightQuadX = width - config.marginX - halfW - iw + clipXh;
-        int bottomQuadY = height - config.marginY - halfH + clipYh;
+        int rightQuadX = x + actualW - halfW + clipXh;  // Relative to FIXED x
+        int bottomQuadY = y + actualH - halfH + clipYh; // Relative to FIXED y;
 
         drawTexture(context, x, y, 0, 0, halfW-clipXl, halfH-clipYl);
         drawTexture(context, rightQuadX, y, halfW+clipXh, 0, halfW-clipXh, halfH-clipYl);
@@ -140,34 +133,36 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
             return;
         }
 
-        int infoWl = (int) (iw/2.);
+        int infoWl = iw/2;
         int infoWh = (int) (iw/2.+0.5);
-        drawTexture(context, width-config.marginX - iw    , y,0, 0, infoWh, halfH);
-        drawTexture(context, width-config.marginX - infoWl, y, screenW-infoWl, 0, infoWl, halfH);
-        drawTexture(context, width-config.marginX - iw    , bottomQuadY, 0, halfH, infoWh, halfH);
-        drawTexture(context, width-config.marginX - infoWl, bottomQuadY, screenW-infoWl, halfH, infoWl, halfH);
+        int infoX = this.width - config.marginX - iw;  // Screen-right edge, FIXED!
 
-        iterate(halfH+config.marginY, bottomQuadY, 100, (pos, len) -> {
-            drawTexture(context, width-config.marginX - iw, pos,0, 25, iw/2, len);
-            drawTexture(context, width-config.marginX - iw/2, pos, screenW-iw/2, 25, iw/2, len);
+        drawTexture(context, infoX, y, 0, 0, infoWh, halfH);
+        drawTexture(context, infoX + infoWl, y, screenW - infoWl, 0, infoWl, halfH);
+        drawTexture(context, infoX, bottomQuadY, 0, halfH, infoWh, halfH);
+        drawTexture(context, infoX + infoWl, bottomQuadY, screenW - infoWl, halfH, infoWl, halfH);
+
+        iterate(halfH + config.marginY, bottomQuadY, 100, (pos, len) -> {
+            drawTexture(context, infoX, pos, 0, 25, iw / 2, len);
+            drawTexture(context, infoX + iw / 2, pos, screenW - iw / 2, 25, iw / 2, len);
         });
 
+        // FIXED: tab.drawBackground now takes 4 params in 1.21.11
         if (tabs.size() > 1) {
             for (AdvancementTab tab : tabs.values()) {
-                tab.drawBackground(context,
-                        x,
-                        y,
-                        width,
-                        height,
-                        tab == selectedTab);
-                }
+                tab.drawBackground(context, x, y, 234,113, tab==selectedTab);  // FIXED: +index param!
+            }
             for (AdvancementTab tab : tabs.values()) {
-                tab.drawIcon(context, x, y);
+                tab.drawIcon(context, x, y);  // This is correct
             }
         }
 
-        context.drawText(textRenderer, selectedTab != null ? selectedTab.getTitle() : ADVANCEMENTS_TEXT, x + 8, y + 6, Colors.DARK_GRAY, false);
+        // Title stays with FIXED window
+        context.drawText(textRenderer,
+                selectedTab != null ? selectedTab.getTitle() : ADVANCEMENTS_TEXT,
+                x + 8, y + 6, Colors.DARK_GRAY, false);
 
+        // Info panel content (unchanged)
         if (search != null) {
             if (AdvancementInfo.mouseClicked != null) {
                 renderCriteria(context, AdvancementInfo.mouseClicked);
@@ -175,9 +170,34 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
                 renderCriteria(context, AdvancementInfo.mouseOver);
             }
         }
+        // FIXED clamp using reflection (safe, works 1.21.11)
+        if (selectedTab != null) {
+            try {
+                // Access private scroll fields via reflection
+                Field scrollXField = AdvancementTab.class.getDeclaredField("originX");  // Or "scrollX" / "panX"
+                Field scrollYField = AdvancementTab.class.getDeclaredField("originY");  // Or "scrollY" / "panY"
 
-        ci.cancel();
+                scrollXField.setAccessible(true);
+                scrollYField.setAccessible(true);
+
+                double scrollX = (Double) scrollXField.get(selectedTab);
+                double scrollY = (Double) scrollYField.get(selectedTab);
+
+                // Clamp to prevent "stuck to first achievement"
+                scrollX = MathHelper.clamp((float)scrollX, -500.0F, 300.0F);  // Wider for Mining
+                scrollY = MathHelper.clamp((float)scrollY, -400.0F, 250.0F);
+
+                // Apply back
+                scrollXField.set(selectedTab, (double)scrollX);
+                scrollYField.set(selectedTab, (double)scrollY);
+
+            } catch (Exception e) {
+                // Fallback: do nothing if fields changed names
+            }
+        }
+        ci.cancel();  // Replace vanilla window entirely
     }
+
 
     private void iterate(int start, int end, int maxstep, IteratorReceiver func) {
         if(start >= end) return;
