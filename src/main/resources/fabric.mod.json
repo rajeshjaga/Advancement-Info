@@ -22,13 +22,13 @@
     "recommends": {
         "modmenu" : ">=2.0.0"
     },
-    "name": "AdvancementInfo",
-    "description": "Make it easier to see which advancements you have and what's missing.",
+    "name": "BetterAdvancementInfo",
+    "description": "A Fabric mod that enhances the advancements screen with detailed information panels and customizable layouts.",
     "icon": "icon.png",
     "authors": [ "" ],
     "contact": {
-        "homepage": "https://www.curseforge.com/minecraft/mc-mods/advancementinfo",
-        "sources": "https://github.com/gbl/AdvancementInfo",
-        "issues": "https://github.com/gbl/AdvancementInfo/issues"
+        "homepage": "https://modrinth.com/mod/better-advancement-info",
+        "sources": "https://github.com/rajeshjaga/Advancement-Info",
+        "issues": "https://github.com/rajeshjaga/Advancement-Info/issues"
     }
 }

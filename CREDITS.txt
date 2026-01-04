@@ -1,0 +1,71 @@
+================================================================================
+                        ADVANCEMENTINFO - CREDITS
+================================================================================
+
+ORIGINAL AUTHOR
+---------------
+gbl
+- Created the original AdvancementInfo mod for Minecraft 1.20.x and earlier
+- Original repository: https://github.com/gbl/AdvancementInfo
+- Designed and implemented all core features and functionality
+- Made the project open source for the community
+
+Thank you gbl for creating this incredible mod and sharing it with the
+Minecraft community! Your work has helped countless players better understand
+and track their advancement progress.
+
+
+1.21.11+ PORT AND MAINTENANCE
+------------------------------
+ultimategamermc
+- Ported the mod to Minecraft 1.21.11+
+- Updated all mixins for the new DrawContext rendering API
+- Fixed advancement tree panning and scrolling issues
+- Modernized build configuration and dependencies
+- Ongoing maintenance and bug fixes
+
+
+ADDITIONAL THANKS
+-----------------
+- Fabric Team: For the excellent Fabric Loader and Fabric API
+- Cloth Config Team: For the configuration library
+- shedaniel: For AutoConfig and Cloth Config
+- Minecraft Modding Community: For documentation and support
+- All contributors to the original AdvancementInfo project
+- Players who tested and provided feedback
+
+
+SPECIAL ACKNOWLEDGMENTS
+-----------------------
+This 1.21.11+ version would not exist without:
+
+1. gbl's original work and open-source contribution
+2. The Fabric modding community's excellent documentation
+3. Patient testing and feedback from the community
+4. AI assistance from Claude (Anthropic) in debugging complex mixin issues
+
+
+UPSTREAM PROJECT
+----------------
+Original AdvancementInfo: https://github.com/gbl/AdvancementInfo
+This port maintains compatibility with the original design while adapting
+to Minecraft's evolving API and rendering systems.
+
+
+LICENSE
+-------
+This project maintains the license of the original AdvancementInfo mod.
+Please see the LICENSE file for full legal terms.
+
+
+CONTACT
+-------
+For issues, suggestions, or contributions:
+- GitHub Issues: https://github.com/YOUR_USERNAME/AdvancementInfo-1.21/issues
+- GitHub Discussions: https://github.com/YOUR_USERNAME/AdvancementInfo-1.21/discussions
+
+
+================================================================================
+Thank you to everyone who has contributed to making Minecraft modding
+such a welcoming and innovative community!
+================================================================================

@@ -9,9 +9,6 @@ repositories {
         url = "https://maven.fabricmc.net/"
     }
     maven {
-        url = "https://minecraft.guntram.de/maven/"
-    }
-    maven {
         url = "https://maven.terraformersmc.com/releases/"
     }
     maven {
@@ -32,7 +29,7 @@ Versions.load(versionFile.newReader())
 archivesBaseName = "advancementinfo"
 ext.projectVersion = "1.3.2"
 
-version = "${Versions['minecraft_version']}-fabric${Versions['fabric_versiononly']}-${project.projectVersion}"
+version = "${project.projectVersion}-${Versions['minecraft_version']}"
 
 loom {
     accessWidenerPath = file("src/main/resources/advancementinfo.accesswidener")
@@ -40,18 +37,29 @@ loom {
 
 processResources {
     inputs.property "version", project.version
-
+    inputs.property "minecraft_version", Versions['minecraft_version']
+    inputs.property "loader_version", Versions['loader_version']
+    inputs.property "fabric_version", Versions['fabric_version']
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand (
+                "version": project.version,
+                "minecraft_version": Versions['minecraft_version'],
+                "loader_version": Versions['loader_version'],
+                "fabric_version": Versions['fabric_version']
+        )
     }
 }
 
 dependencies {
     minecraft  "com.mojang:minecraft:${Versions['minecraft_version']}"
     mappings   "net.fabricmc:yarn:${Versions['yarn_mappings']}:v2"
+
     modImplementation "net.fabricmc:fabric-loader:${Versions['loader_version']}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${Versions['fabric_version']}"
+
     modCompileOnly "me.shedaniel.cloth:cloth-config-fabric:21.11.153"
+    include "me.shedaniel.cloth:cloth-config-fabric:21.11.153"
+
     modCompileOnly "com.terraformersmc:modmenu:17.0.0-beta.1"
 }
 
@@ -60,26 +68,17 @@ java {
 }
 
 jar {
-    from "LICENSE"
+    from("LICENSE") {
+        rename { "${it}_${archivesBaseName}" }
+    }
+    from("CREDITS.txt")
+    from("README.md")
 }
 
 modrinth {
-    projectId = 'advancementinfo'
+    projectId = 'betteradvancementinfo'
     versionName = project.archivesBaseName
     uploadFile = remapJar
 }
 
-curseforge {
-    apiKey = System.getenv("CURSEFORGE_TOKEN") ?: "0"
-    project {
-        id = '403815'
-        releaseType = 'release'
-        addGameVersion("${Versions['minecraft_version']}")
-        addGameVersion("Java "+targetCompatibility)
-        addGameVersion("Fabric")
-        mainArtifact(remapJar)
-    }
-    options {
-        forgeGradleIntegration = false
-    }
-}
+

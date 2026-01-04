@@ -7,10 +7,8 @@ import de.guntram.mcmod.advancementinfo.IteratorReceiver;
 import de.guntram.mcmod.advancementinfo.accessors.AdvancementScreenAccessor;
 import de.guntram.mcmod.advancementinfo.accessors.AdvancementWidgetAccessor;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.advancement.Advancement;
 import net.minecraft.advancement.PlacedAdvancement;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
@@ -20,14 +18,11 @@ import net.minecraft.client.gui.screen.advancement.AdvancementWidget;
 import net.minecraft.client.gui.screen.advancement.AdvancementsScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.input.CharInput;
 import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.network.ClientAdvancementManager;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -111,8 +106,8 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
         int clipYh = (int) (Math.max(0, screenH-actualH)/2.+0.5);
         int clipYl = (int) (Math.max(0, screenH-actualH)/2.);
 
-        int rightQuadX = x + actualW - halfW + clipXh;  // Relative to FIXED x
-        int bottomQuadY = y + actualH - halfH + clipYh; // Relative to FIXED y;
+        int rightQuadX = x + actualW - halfW + clipXh;
+        int bottomQuadY = y + actualH - halfH + clipYh;
 
         drawTexture(context, x, y, 0, 0, halfW-clipXl, halfH-clipYl);
         drawTexture(context, rightQuadX, y, halfW+clipXh, 0, halfW-clipXh, halfH-clipYl);
@@ -135,7 +130,7 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
 
         int infoWl = iw/2;
         int infoWh = (int) (iw/2.+0.5);
-        int infoX = this.width - config.marginX - iw;  // Screen-right edge, FIXED!
+        int infoX = this.width - config.marginX - iw;
 
         drawTexture(context, infoX, y, 0, 0, infoWh, halfH);
         drawTexture(context, infoX + infoWl, y, screenW - infoWl, 0, infoWl, halfH);
@@ -147,22 +142,19 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
             drawTexture(context, infoX + iw / 2, pos, screenW - iw / 2, 25, iw / 2, len);
         });
 
-        // FIXED: tab.drawBackground now takes 4 params in 1.21.11
         if (tabs.size() > 1) {
             for (AdvancementTab tab : tabs.values()) {
-                tab.drawBackground(context, x, y, 234,113, tab==selectedTab);  // FIXED: +index param!
+                tab.drawBackground(context, x, y, 234, 113, tab==selectedTab);
             }
             for (AdvancementTab tab : tabs.values()) {
-                tab.drawIcon(context, x, y);  // This is correct
+                tab.drawIcon(context, x, y);
             }
         }
 
-        // Title stays with FIXED window
         context.drawText(textRenderer,
                 selectedTab != null ? selectedTab.getTitle() : ADVANCEMENTS_TEXT,
                 x + 8, y + 6, Colors.DARK_GRAY, false);
 
-        // Info panel content (unchanged)
         if (search != null) {
             if (AdvancementInfo.mouseClicked != null) {
                 renderCriteria(context, AdvancementInfo.mouseClicked);
@@ -170,34 +162,11 @@ public abstract class AdvancementScreenMixin extends Screen implements Advanceme
                 renderCriteria(context, AdvancementInfo.mouseOver);
             }
         }
-        // FIXED clamp using reflection (safe, works 1.21.11)
-        if (selectedTab != null) {
-            try {
-                // Access private scroll fields via reflection
-                Field scrollXField = AdvancementTab.class.getDeclaredField("originX");  // Or "scrollX" / "panX"
-                Field scrollYField = AdvancementTab.class.getDeclaredField("originY");  // Or "scrollY" / "panY"
 
-                scrollXField.setAccessible(true);
-                scrollYField.setAccessible(true);
+        // REMOVED THE PROBLEMATIC CLAMPING CODE HERE
 
-                double scrollX = (Double) scrollXField.get(selectedTab);
-                double scrollY = (Double) scrollYField.get(selectedTab);
-
-                // Clamp to prevent "stuck to first achievement"
-                scrollX = MathHelper.clamp((float)scrollX, -500.0F, 300.0F);  // Wider for Mining
-                scrollY = MathHelper.clamp((float)scrollY, -400.0F, 250.0F);
-
-                // Apply back
-                scrollXField.set(selectedTab, (double)scrollX);
-                scrollYField.set(selectedTab, (double)scrollY);
-
-            } catch (Exception e) {
-                // Fallback: do nothing if fields changed names
-            }
-        }
-        ci.cancel();  // Replace vanilla window entirely
+        ci.cancel();
     }
-
 
     private void iterate(int start, int end, int maxstep, IteratorReceiver func) {
         if(start >= end) return;
